@@ -1,4 +1,4 @@
-package backend.geolocation.util;
+package backend.common.util;
 
 import org.locationtech.proj4j.*;
 
