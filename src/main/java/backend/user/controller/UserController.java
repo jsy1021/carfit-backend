@@ -2,6 +2,7 @@ package backend.user.controller;
 
 
 import backend.auth.service.RefreshTokenService;
+import backend.common.util.AESUtil;
 import backend.user.dto.*;
 import backend.auth.security.JwtUtil;
 import backend.auth.security.TokenBlacklist;
@@ -96,7 +97,8 @@ public class UserController {
                     .user(LoginResponseDto.UserInfo.builder()
                             .userId(user.getUserId())
                             .name(user.getName())
-                            .email(user.getEmail())
+                            .email(AESUtil.decrypt(user.getEmail()))
+                            .address(AESUtil.decrypt(user.getAddress()))
                             .role(user.getRole())
                             .build())
                     .timestamp(LocalDateTime.now())
