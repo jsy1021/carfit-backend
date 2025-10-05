@@ -58,7 +58,7 @@ public class WebSecurityConfig {
                                 "/api/oil",
                                 "/api/geocode",
                                 "/api/calculate-insurance",
-                                "/api/stations/**",
+                                "/api/stations/**",  // stations 관련 모든 API 허용
                                 "/api/public/**",
                                 "/h2-console/**"
                         ).permitAll()
