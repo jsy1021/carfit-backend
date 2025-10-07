@@ -35,6 +35,9 @@ public class User {
     @Column(name="address")
     private String address; //주소
 
+    @Column(name="avatar_url", length = 255)
+    private String avatarUrl; // 아바타 이미지 URL
+
     @Column(name="birth_date")
     private LocalDate birthDate; //생년월일
 
@@ -66,6 +69,11 @@ public class User {
         this.marketingAgreed = marketingAgreed;
         this.createdAt = new Date();
         this.role = "USER";
+    }
+
+    // 아바타만 업데이트
+    public void updateAvatar(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 }
 
