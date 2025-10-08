@@ -61,6 +61,7 @@ public class WebSecurityConfig {
                                 "/api/stations/**",  // stations 관련 모든 API 허용
                                 "/api/community/**", // community 공개 API 허용
                                 "/api/public/**",
+                                "/api/profile/**",
                                 "/h2-console/**"
                         ).permitAll()
                         .anyRequest().authenticated()
