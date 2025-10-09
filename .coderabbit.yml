@@ -16,7 +16,7 @@ reviews:
     base_branches:
       - "main"
       - "develop"
-      - "master"
+
 
 # 채팅 설정
 chat:
