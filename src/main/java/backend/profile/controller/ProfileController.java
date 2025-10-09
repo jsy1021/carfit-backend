@@ -28,11 +28,14 @@ public class ProfileController {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        
+
         try {
             UserProfileResponse profile = profileService.getMyProfile(userDetails.getUsername());
             log.info("프로필 조회 성공: userId={}", userDetails.getUsername());
             return ResponseEntity.ok(profile);
+        } catch (IllegalArgumentException e) {
+            log.warn("프로필 조회 실패: userId={}, error={}", userDetails.getUsername(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (Exception e) {
             log.error("프로필 조회 실패: userId={}, error={}", userDetails.getUsername(), e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -53,7 +56,7 @@ public class ProfileController {
         
         try {
             UserProfileResponse updated = profileService.updateMyProfile(userDetails.getUsername(), request);
-            log.info("프로필 수정 성공: userId={}, nickname={}", userDetails.getUsername(), request);
+            log.info("프로필 수정 성공: userId={}, avatarUrl={}", userDetails.getUsername(), request);
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException e) {
             log.warn("프로필 수정 실패: userId={}, error={}", userDetails.getUsername(), e.getMessage());
