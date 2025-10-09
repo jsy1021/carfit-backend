@@ -16,6 +16,7 @@ reviews:
     base_branches:
       - "main"
       - "develop"
+      - "user/profile"
 
 
 # 채팅 설정
