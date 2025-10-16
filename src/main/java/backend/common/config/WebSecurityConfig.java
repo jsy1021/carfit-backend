@@ -62,7 +62,8 @@ public class WebSecurityConfig {
                                 "/api/community/**", // community 공개 API 허용
                                 "/api/public/**",
                                 "/api/profile/**",
-                                "/h2-console/**"
+                                "/h2-console/**",
+                                "/images/**"   // 정적 이미지 리소스 허용 추가
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
