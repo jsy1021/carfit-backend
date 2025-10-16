@@ -44,4 +44,19 @@ public class S3Service {
             throw new RuntimeException("S3 업로드 실패: " + e.getMessage(), e);
         }
     }
+
+    public void deleteFile(String fileKey) {
+        try {
+            if (amazonS3.doesObjectExist(bucketName, fileKey)) {
+                amazonS3.deleteObject(bucketName, fileKey);
+                log.info("S3 파일 삭제 성공 - bucket: {}, fileKey: {}", bucketName, fileKey);
+            } else {
+                log.warn("S3 파일 존재하지 않음 - bucket: {}, fileKey: {}", bucketName, fileKey);
+            }
+        } catch (Exception e) {
+            log.error("S3 파일 삭제 실패 - bucket: {}, fileKey: {}, error: {}", bucketName, fileKey, e.getMessage(), e);
+            throw new RuntimeException("S3 삭제 실패: " + e.getMessage(), e);
+        }
+    }
+
 }

@@ -44,7 +44,18 @@ public class ProfileController {
         }
 
         try {
-            //실제 S3 업로드
+            // 기존 프로필 이미지 삭제
+            String existingUrl = userService.getProfileImageUrl(userDetails.getUsername());
+            if (existingUrl != null && !existingUrl.contains("default.png")) {
+                int index = existingUrl.lastIndexOf("/");
+                if (index != -1) {
+                    String key = existingUrl.substring(existingUrl.indexOf("profile/"));
+                    s3Service.deleteFile(key);
+                    log.info("기존 프로필 이미지 삭제 성공 - key: {}", key);
+                }
+            }
+
+            // 새 이미지 S3 업로드
             String folder = "profile/" + userDetails.getUsername() + "/";
             String s3Url = s3Service.uploadFile(file, folder);
 
