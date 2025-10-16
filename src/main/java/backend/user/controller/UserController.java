@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -47,6 +49,7 @@ public class UserController {
     private final TokenBlacklist tokenBlacklist;
     private final RefreshTokenService refreshTokenService;
     private final AuthMailService authMailService;
+    private final backend.user.service.S3Service s3Service;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDto loginRequestDto,
@@ -100,6 +103,7 @@ public class UserController {
                             .email(AESUtil.decrypt(user.getEmail()))
                             .address(AESUtil.decrypt(user.getAddress()))
                             .role(user.getRole())
+                            .profileImageUrl(user.getProfileImageUrl())
                             .build())
                     .timestamp(LocalDateTime.now())
                     .build();
@@ -299,6 +303,42 @@ public class UserController {
             log.error("인증번호 검증 중 오류: email={}, error={}", request.getEmail(), e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("success", false, "message", "인증 처리 중 오류가 발생했습니다."));
+        }
+    }
+
+    /**
+     * 프로필 이미지 업로드
+     */
+    @PostMapping("/profile/image/upload")
+    public ResponseEntity<?> uploadProfileImage(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam("file") MultipartFile file
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            // S3에 실제 파일 업로드
+            String folder = "profile/" + userDetails.getUsername() + "/";
+            String s3Url = s3Service.uploadFile(file, folder);
+            
+            log.info("S3 업로드 완료: s3Url={}", s3Url);
+            
+            // 사용자 프로필 이미지 업데이트
+            userService.updateProfileImage(userDetails.getUsername(), s3Url);
+            
+            log.info("프로필 이미지 업로드 성공: userId={}, s3Url={}", userDetails.getUsername(), s3Url);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "프로필 이미지가 업로드되었습니다.",
+                    "profileImageUrl", s3Url
+            ));
+            
+        } catch (Exception e) {
+            log.error("프로필 이미지 업로드 실패: userId={}, error={}", userDetails.getUsername(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "이미지 업로드 중 오류가 발생했습니다."));
         }
     }
 

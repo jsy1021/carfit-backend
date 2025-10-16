@@ -44,5 +44,16 @@ public class UserService {
         return true;
     }
 
+    /**
+     * 프로필 이미지 업데이트
+     */
+    public void updateProfileImage(String userId, String profileImageUrl) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다"));
+        
+        user.updateProfileImage(profileImageUrl);
+        userRepository.save(user);
+    }
+
 }
 

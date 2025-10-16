@@ -35,8 +35,8 @@ public class User {
     @Column(name="address")
     private String address; //주소
 
-    @Column(name="avatar_url", length = 255)
-    private String avatarUrl; // 아바타 이미지 URL
+    @Column(name="profile_image_url", length = 500)
+    private String profileImageUrl; // 프로필 이미지 URL
 
     @Column(name="birth_date")
     private LocalDate birthDate; //생년월일
@@ -63,6 +63,7 @@ public class User {
         this.name = name;
         this.email = email;
         this.address = address;
+        this.profileImageUrl = null; // 기본값은 null (기본 프로필 이미지 사용)
         this.birthDate = birthDate;
         this.termsAgreed = agreedTerms;
         this.privacyAgreed = privacyAgreed;
@@ -71,9 +72,16 @@ public class User {
         this.role = "USER";
     }
 
-    // 아바타만 업데이트
-    public void updateAvatar(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
+    // 프로필 이미지만 업데이트
+    public void updateProfileImage(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
+    
+    // 실제 사용할 프로필 이미지 URL 반환 (null이면 기본 이미지)
+    public String getProfileImageUrl() {
+        return this.profileImageUrl == null 
+            ? "http://localhost:8080/images/profile/default.png"  // 기본 이미지 (완전한 URL)
+            : this.profileImageUrl;  // 사용자가 설정한 이미지 (S3 URL)
     }
 }
 
