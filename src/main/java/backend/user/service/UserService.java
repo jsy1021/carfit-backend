@@ -45,6 +45,15 @@ public class UserService {
     }
 
     /**
+     * 기존 프로필 이미지 URL 조회
+     */
+    public String getProfileImageUrl(String userId) {
+        return userRepository.findByUserId(userId)
+                .map(User::getProfileImageUrl)
+                .orElse(null);
+    }
+
+    /**
      * 프로필 이미지 업데이트
      */
     public void updateProfileImage(String userId, String profileImageUrl) {
