@@ -65,7 +65,11 @@ public class WebSecurityConfig {
                                 "/h2-console/**",
                                 "/images/**",   // 정적 이미지 리소스 허용 추가
                                 "/actuator/prometheus", //모니터링 추가
-                                "/actuator/metrics"
+                                "/actuator/metrics",
+                                "/swagger-ui/**", //Swagger 리소스 추가
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
