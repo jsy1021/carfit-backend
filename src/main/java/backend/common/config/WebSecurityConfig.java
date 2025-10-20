@@ -55,7 +55,7 @@ public class WebSecurityConfig {
                                 "/user/check-duplicate",
                                 "/api/auth/**",
                                 "/api/protected",
-                                "/api/oil",
+                                "/api/oil/**",  // oil 관련 모든 API 허용
                                 "/api/geocode",
                                 "/api/calculate-insurance",
                                 "/api/stations/**",  // stations 관련 모든 API 허용
@@ -63,7 +63,9 @@ public class WebSecurityConfig {
                                 "/api/public/**",
                                 "/api/profile/**",
                                 "/h2-console/**",
-                                "/images/**"   // 정적 이미지 리소스 허용 추가
+                                "/images/**",   // 정적 이미지 리소스 허용 추가
+                                "/actuator/prometheus", //모니터링 추가
+                                "/actuator/metrics"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
