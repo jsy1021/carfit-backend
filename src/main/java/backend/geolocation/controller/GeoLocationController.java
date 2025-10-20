@@ -81,12 +81,25 @@ public class GeoLocationController {
             
             // 결과 반환
             Map<String, Object> result = new HashMap<>();
+            
+            // 변환된 좌표 (TM128)
             result.put("x", x);
             result.put("y", y);
             result.put("coordinate_system", "TM128");
+            
+            // 원본 좌표 (WGS84)
+            result.put("original_x", originalX);
+            result.put("original_y", originalY);
             result.put("original_coordinate_system", "WGS84");
+            
+            // 변환 정보
             result.put("accuracy_validated", isValid);
             result.put("conversion_precision_meters", 0.01); // 1cm 정밀도
+            
+            // 주소 정보
+            result.put("address", coordinates.path("roadAddress").asText());
+            result.put("jibun_address", coordinates.path("jibunAddress").asText());
+            
             return ResponseEntity.ok(result);
 
         } catch (Exception e) {
