@@ -40,6 +40,9 @@ CarFit은 자동차 소유자들을 위한 종합적인 관리 플랫폼입니�
 - **데이터 암호화**: AES 암호화를 통한 개인정보 보호
 
 ### ⛽ 유가 정보 관리
+<img src="https://github.com/user-attachments/assets/0a791a0c-65b0-4026-8138-b766e2ac85f7" width="700"/>
+
+
 
 - **실시간 유가 조회**: Opinet API 연동
 - **지역별 유가 분석**: 시도/시군구별 평균 유가 제공
@@ -58,13 +61,17 @@ CarFit은 자동차 소유자들을 위한 종합적인 관리 플랫폼입니�
 - **실시간 가격**: 각 주유소별 실시간 유가 정보
 
 ### 💬 커뮤니티
+<img src="https://github.com/user-attachments/assets/1e585a3b-80dd-405c-8d31-7bdba34f2c79" width="700"/>
+
 - **게시판**: 자동차 관련 정보 공유
 - **댓글 시스템**: 게시글별 댓글 작성 및 관리
 - **사용자 인증**: 로그인한 사용자만 게시글 작성 가능
 
 ### 🛡️ 보험 계산
+<img src="https://github.com/user-attachments/assets/d25f9b35-2f2f-46a0-bf14-6797da80746f" width="700"/>
+
 - **자동차 보험료 계산**: 차량 정보 기반 보험료 산출
-- **실시간 계산**: 즉시 보험료 견적 제공
+
 
 ## 🛠 기술 스택
 
