@@ -3,6 +3,7 @@ package backend.user.controller;
 
 import backend.auth.service.RefreshTokenService;
 import backend.common.util.AESUtil;
+import backend.user.domain.User;
 import backend.user.dto.*;
 import backend.auth.security.JwtUtil;
 import backend.auth.security.TokenBlacklist;
@@ -32,6 +33,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
+import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -77,7 +79,7 @@ public class UserController {
             String accessToken = jwtUtil.generateAccessToken(userDetails);
             
             // 6. Refresh Token 생성 및 저장 (7일)
-            String refreshToken = refreshTokenService.createRefreshToken(loginRequestDto.getUserId());
+            String refreshToken = refreshTokenService.createOrUpdateRefreshToken(loginRequestDto.getUserId());
             
             // 7. Refresh Token을 httpOnly Cookie로 설정
             Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
@@ -88,7 +90,7 @@ public class UserController {
             response.addCookie(refreshTokenCookie);
 
             // 8. 사용자 정보 조회 (응답용)
-            backend.user.domain.User user = ((backend.auth.security.CustomUserDetails) userDetails).getUser();
+            User user = ((backend.auth.security.CustomUserDetails) userDetails).getUser();
 
             // 9. 응답 데이터 구성
             LoginResponseDto loginResponse = LoginResponseDto.builder()
@@ -339,6 +341,79 @@ public class UserController {
             log.error("프로필 이미지 업로드 실패: userId={}, error={}", userDetails.getUsername(), e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("success", false, "message", "이미지 업로드 중 오류가 발생했습니다."));
+        }
+    }
+
+
+    /**
+     * 소셜 로그인시 추가 정보 입력
+     */
+    @PostMapping("/social/profile")
+    public ResponseEntity<?> updateSocialProfile(@RequestBody SocialProfileRequestDto requestDto,
+                                               @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            log.info("소셜 사용자 프로필 업데이트 요청: userId={}", userDetails.getUsername());
+            
+            // 유효성 검증
+            if (requestDto.getAddress() == null || requestDto.getAddress().trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "message", "주소는 필수입니다."));
+            }
+            
+            if (requestDto.getBirthDate() == null || requestDto.getBirthDate().trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "message", "생년월일은 필수입니다."));
+            }
+
+            // 생년월일 형식 검증 (YYYYMMDD)
+            if (!requestDto.getBirthDate().matches("^\\d{8}$")) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "message", "생년월일은 8자리 숫자로 입력해주세요. (예: 19900101)"));
+            }
+
+            // 사용자 프로필 업데이트
+            userService.updateSocialUserProfile(userDetails.getUsername(), requestDto);
+            
+            log.info("소셜 사용자 프로필 업데이트 성공: userId={}", userDetails.getUsername());
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "프로필 정보가 업데이트되었습니다."
+            ));
+
+        } catch (IllegalArgumentException e) {
+            log.warn("소셜 사용자 프로필 업데이트 실패: userId={}, error={}", userDetails.getUsername(), e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        } catch (Exception e) {
+            log.error("소셜 사용자 프로필 업데이트 실패: userId={}, error={}", userDetails.getUsername(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "프로필 업데이트 중 오류가 발생했습니다."));
+        }
+    }
+
+    /**
+     * 소셜 로그인 사용자 프로필 정보 조회
+     */
+    @GetMapping("/social/profile")
+    public ResponseEntity<?> getSocialProfile(@AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            log.info("소셜 사용자 프로필 조회 요청: userId={}", userDetails.getUsername());
+
+            SocialProfileRequestDto profile = userService.getSocialUserProfile(userDetails.getUsername());
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "profile", profile
+            ));
+
+        } catch (IllegalArgumentException e) {
+            log.warn("소셜 사용자 프로필 조회 실패: userId={}, error={}", userDetails.getUsername(), e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        } catch (Exception e) {
+            log.error("소셜 사용자 프로필 조회 실패: userId={}, error={}", userDetails.getUsername(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "프로필 조회 중 오류가 발생했습니다."));
         }
     }
 
