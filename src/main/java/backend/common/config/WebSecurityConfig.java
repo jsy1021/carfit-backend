@@ -28,8 +28,8 @@ public class WebSecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public WebSecurityConfig(CustomUserDetailsService customUserDetailsService,
-                             JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public WebSecurityConfig(CustomUserDetailsService customUserDetailsService, 
+                           JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.customUserDetailsService = customUserDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
@@ -63,7 +63,6 @@ public class WebSecurityConfig {
                                 "/api/public/**",
                                 "/api/profile/**",
                                 "/h2-console/**",
-                                "/oauth/**",
                                 "/images/**",   // 정적 이미지 리소스 허용 추가
                                 "/actuator/prometheus", //모니터링 추가
                                 "/actuator/metrics",

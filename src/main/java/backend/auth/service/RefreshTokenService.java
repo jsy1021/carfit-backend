@@ -23,30 +23,25 @@ public class RefreshTokenService {
      * Refresh Token 생성 및 저장
      */
     @Transactional
-    public String createOrUpdateRefreshToken(String userId) {
-        String newToken = jwtUtil.generateRefreshToken(userId);
-        LocalDateTime expiry = LocalDateTime.now()
-                .plusSeconds(jwtUtil.getRefreshExpirationInSeconds());
-
-        // 기존 토큰이 있으면 갱신, 없으면 새로 생성
-        RefreshToken refreshToken = refreshTokenRepository.findByUserId(userId)
-                .map(existingToken -> {
-                    existingToken.updateToken(newToken, expiry);
-                    log.info("기존 Refresh Token 갱신: userId={}", userId);
-                    return existingToken;
-                })
-                .orElseGet(() -> {
-                    log.info("새 Refresh Token 생성: userId={}", userId);
-                    return RefreshToken.builder()
-                            .userId(userId)
-                            .token(newToken)
-                            .expiryDate(expiry)
-                            .createdAt(LocalDateTime.now())
-                            .build();
-                });
-
+    public String createRefreshToken(String userId) {
+        // 기존 Refresh Token 삭제
+        refreshTokenRepository.findByUserId(userId)
+                .ifPresent(refreshTokenRepository::delete);
+        
+        // 새로운 Refresh Token 생성
+        String token = jwtUtil.generateRefreshToken(userId);
+        
+        RefreshToken refreshToken = RefreshToken.builder()
+                .userId(userId)
+                .token(token)
+                .expiryDate(LocalDateTime.now().plusSeconds(jwtUtil.getRefreshExpirationInSeconds()))
+                .createdAt(LocalDateTime.now())
+                .build();
+        
         refreshTokenRepository.save(refreshToken);
-        return newToken;
+        log.info("Refresh Token 생성: userId={}", userId);
+        
+        return token;
     }
     
     /**
