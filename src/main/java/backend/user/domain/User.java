@@ -56,8 +56,15 @@ public class User {
     @Column(name="role")
     private String role; //user로 저장
 
+    @Column(name="provider_id")
+    private String providerId; // 소셜 로그인 ID
+
+    @Column(name="provider")
+    private String provider; // 소셜 로그인 제공자 (kakao, google 등)
+
     public User(String userId, String password, String name, String email, String address,
                 LocalDate birthDate, boolean agreedTerms, boolean privacyAgreed, boolean marketingAgreed) {
+        this.provider="local";
         this.userId = userId;
         this.password = password;
         this.name = name;
@@ -80,8 +87,51 @@ public class User {
     // 실제 사용할 프로필 이미지 URL 반환 (null이면 기본 이미지)
     public String getProfileImageUrl() {
         return this.profileImageUrl == null 
-            ? "http://localhost:8080/images/profile/default.png"  // 기본 이미지 (완전한 URL)
+            ? "https://carfit-aws-bucket.s3.ap-northeast-2.amazonaws.com/assets/profile/default.png"  // 기본 이미지 (완전한 URL)
             : this.profileImageUrl;  // 사용자가 설정한 이미지 (S3 URL)
+    }
+
+    // 소셜 로그인용 생성자
+    public User(String providerId, String provider, String name, String email,String profileImageUrl) {
+        this.providerId = providerId;
+        this.provider = provider;
+        this.name = name;
+        this.email = email;
+        this.profileImageUrl = profileImageUrl;
+        this.userId = provider + "_" + providerId; // 소셜 로그인용 userId 생성
+        this.password = null; // 소셜 로그인은 비밀번호 없음
+        this.address = null;
+        this.birthDate = null;
+        this.termsAgreed = true; // 소셜 로그인 시 기본 동의
+        this.privacyAgreed = true;
+        this.marketingAgreed = false;
+        this.createdAt = new Date();
+        this.role = "USER";
+    }
+
+    // 소셜 로그인 사용자 정보 업데이트
+    public void updateSocialUserInfo(String name, String email, String profileImageUrl) {
+        if (name != null && !name.isEmpty()) {
+            this.name = name;
+        }
+        if (email != null && !email.isEmpty()) {
+            this.email = email;
+        }
+        if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+            this.profileImageUrl = profileImageUrl;
+        }
+        // updatedAt 필드가 있다면 여기서도 업데이트
+    }
+
+    // 소셜 로그인 사용자 여부 확인
+    public boolean isSocialUser() {
+        return this.providerId != null && this.provider != null;
+    }
+
+    // 소셜 로그인 사용자 프로필 정보 업데이트 (주소, 생년월일)
+    public void updateSocialUserProfile(String address, LocalDate birthDate, String encodedAddress) {
+        this.address = encodedAddress; // 암호화된 주소 저장
+        this.birthDate = birthDate;
     }
 }
 

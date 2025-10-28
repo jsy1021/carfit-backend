@@ -1,9 +1,6 @@
 package backend.user.util;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -16,17 +13,27 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 
+import org.springframework.stereotype.Component;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import lombok.extern.slf4j.Slf4j;
+
+
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class KakaoUtil {
 
-    @Value("${kakao.client-id}")
+    @Value("${KAKAO_CLIENT_ID}")
     private String clientId;
 
-    @Value("${kakao.client-secret}")
+    @Value("${KAKAO_CLIENT_SECRET}")
     private String clientSecret;
 
-    @Value("${kakao.redirect-uri}")
+    @Value("${KAKAO_REDIRECT_URI}")
     private String redirectUri;
 
 
@@ -76,7 +83,8 @@ public class KakaoUtil {
             String result = responseSb.toString();
             log.info("responseBody = {}", result);
 
-            JsonElement element = JsonParser.parseString(result);
+            JsonParser parser = new JsonParser();
+            JsonElement element = parser.parse(result);
             accessToken = element.getAsJsonObject().get("access_token").getAsString();
             refreshToken = element.getAsJsonObject().get("refresh_token").getAsString();
 
@@ -117,24 +125,34 @@ public class KakaoUtil {
             String result = responseSb.toString();
             log.info("responseBody = {}", result);
 
+            JsonParser parser = new JsonParser();
+            JsonElement element = parser.parse(result);
 
-            JsonElement element = JsonParser.parseString(result);
-
-            // `id`는 최상위 레벨에 있으므로 바로 추출 가능
+            // 1. 최상위 id
             String id = element.getAsJsonObject().get("id").getAsString();
 
-            // `nickname`은 `properties` 내부에 있으므로 추출
+            // 2. 닉네임
             JsonObject properties = element.getAsJsonObject().get("properties").getAsJsonObject();
             String nickname = properties.get("nickname").getAsString();
 
-            // 3️⃣ email 추출 (kakao_account 내부)
+            // 3. 프로필 이미지
+            String profileImageUrl = null;
+            if (properties.has("profile_image")) {
+                profileImageUrl = properties.get("profile_image").getAsString();
+            }
+
+            // 4. 이메일 (kakao_account 내부)
             JsonObject kakaoAccount = element.getAsJsonObject().get("kakao_account").getAsJsonObject();
-            String email = kakaoAccount.has("email") ? kakaoAccount.get("email").getAsString() : null;
+            String email = null;
+            if (kakaoAccount.has("email")) {
+                email = kakaoAccount.get("email").getAsString();
+            }
 
-
+            // 결과 map에 담기
             userInfo.put("id", id);
             userInfo.put("nickname", nickname);
             userInfo.put("email", email);
+            userInfo.put("profile_image_url", profileImageUrl);
 
             br.close();
 

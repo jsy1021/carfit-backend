@@ -6,6 +6,8 @@ import backend.location.dto.UserDefaultLocationRequest;
 import backend.location.dto.UserDefaultLocationResponse;
 import backend.location.service.UserDefaultLocationService;
 import backend.user.domain.User;
+import backend.user.repository.UserRepository;
+import backend.common.util.AESUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserDefaultLocationController {
 
     private final UserDefaultLocationService locationService;
+    private final UserRepository userRepository;
 
     @PostMapping("/address")
     public ResponseEntity<UserDefaultLocationResponse> saveAddress(
@@ -68,10 +71,32 @@ public class UserDefaultLocationController {
         log.info("사용자: {}", user.getUserId());
 
         UserDefaultLocation location = locationService.getUserDefaultLocation(user.getId());
-        
+
         if (location == null) {
-            log.info("기본 위치가 설정되지 않음");
-            return ResponseEntity.notFound().build();
+            log.info("기본 위치가 설정되지 않음. 사용자 주소를 조회합니다.");
+            return userRepository.findById(user.getId())
+                    .filter(u -> u.getAddress() != null && !u.getAddress().isEmpty())
+                    .map(u -> {
+                        String decrypted = "";
+                        try {
+                            decrypted = AESUtil.decrypt(u.getAddress());
+                        } catch (Exception e) {
+                            log.warn("주소 복호화 실패: {}", e.getMessage());
+                        }
+                        UserDefaultLocationResponse response = UserDefaultLocationResponse.builder()
+                                .id(null)
+                                .userId(u.getId())
+                                .address(decrypted)
+                                .latitude(null)
+                                .longitude(null)
+                                .build();
+                        log.info("사용자 주소로 반환: address={}", response.getAddress());
+                        return ResponseEntity.ok(response);
+                    })
+                    .orElseGet(() -> {
+                        log.info("사용자 주소도 설정되지 않음");
+                        return ResponseEntity.notFound().build();
+                    });
         }
 
         // DTO로 변환

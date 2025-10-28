@@ -83,14 +83,14 @@ public class UserService {
         try {
             // 생년월일 파싱 (YYYYMMDD -> LocalDate)
             LocalDate birthDate = LocalDate.parse(requestDto.getBirthDate(), DateTimeFormatter.ofPattern("yyyyMMdd"));
-            
+
             // 주소 암호화
             String encodedAddress = AESUtil.encrypt(requestDto.getAddress());
-            
+
             // 사용자 정보 업데이트
             user.updateSocialUserProfile(requestDto.getAddress(), birthDate, encodedAddress);
             userRepository.save(user);
-            
+
         } catch (Exception e) {
             throw new IllegalArgumentException("사용자 정보 업데이트 중 오류가 발생했습니다: " + e.getMessage());
         }
@@ -110,21 +110,20 @@ public class UserService {
         try {
             // 암호화된 주소 복호화
             String decryptedAddress = AESUtil.decrypt(user.getAddress());
-            
+
             // 생년월일을 YYYYMMDD 형식으로 변환
-            String birthDateStr = user.getBirthDate() != null 
-                ? user.getBirthDate().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
-                : null;
+            String birthDateStr = user.getBirthDate() != null
+                    ? user.getBirthDate().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+                    : null;
 
             return SocialProfileRequestDto.builder()
                     .address(decryptedAddress)
                     .birthDate(birthDateStr)
                     .build();
-                    
+
         } catch (Exception e) {
             throw new IllegalArgumentException("사용자 정보 조회 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
-
 }
 
